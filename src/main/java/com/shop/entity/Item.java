@@ -1,5 +1,6 @@
 package com.shop.entity;
 import  com.shop.entity.constant.ItemSellStatus;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
