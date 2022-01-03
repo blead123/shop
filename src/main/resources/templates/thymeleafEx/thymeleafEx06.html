@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1> ThymeLeaf 링크 처리 페이지 </h1>
+  <div>
+    <a th:href="@{/thymeleaf/ex01}">예제 1 페이지 이동</a>
+  </div>
+  <div>
+    <a th:href="@{https://www.thymeleaf.org/}">타임리프 공식 홈피 이동</a>
+  </div>
+  <div>
+      <a th:href="@{/thymeleaf/ex07(param1 = '파라미터 데이터1', param2 = '파라미터 데이터2')}">타임리프 파라미터 전달</a>
+  </div>
+</body>
+</html>
