@@ -32,6 +32,33 @@ class OrderTest {
 
     @Autowired
     MemberRepository memberRepository;
+    //주문 데이터 생성 메소드
+    public Order createOrder(){
+        Order order = new Order();
+        for(int i =1; i<=10;i++){
+            Item item = createItem();
+            itemRepository.save(item);
+            OrderItem orderItem = new OrderItem();
+            orderItem.setItem(item);
+            orderItem.setCount(10);
+            orderItem.setOrder(order);
+            order.getOrderItems().add(orderItem);
+        }
+
+        Member member = new Member();
+        memberRepository.save(member);
+
+        order.setMember(member);
+        orderRepository.save(order);
+        return order;
+    }
+    @Test
+    @DisplayName("고아객체 제거 테스팅")
+    public void orphanRemovalTest(){
+        Order order = this.createOrder();
+        order.getOrderItems().remove(1);
+        em.flush();
+    }
 
     @PersistenceContext
     EntityManager em;
@@ -49,9 +76,6 @@ class OrderTest {
         return item;
     }
 
-    public Order createOrder(){
-        Order order =new Order();
-    }
 
     @Test
     @DisplayName("영속성 전이 테스트")
@@ -75,4 +99,8 @@ class OrderTest {
         Order savedOrder= orderRepository.findById(order.getId()).orElseThrow(EntityNotFoundException::new);
         assertEquals(10,savedOrder.getOrderItems().size());//실제 db에 3개가 저장됫는지 확인
     }
+
+
+
+
 }
