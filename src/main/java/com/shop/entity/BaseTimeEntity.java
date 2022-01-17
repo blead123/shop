@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public abstract class BaseTimeEntity {
     @CreatedDate//엔티티가 생성되어 저장되는 시간을 자동으로저장
     @Column(updatable = false)
-    private LocalDateTime regTime;
+    private LocalDateTime registeredTime;
 
     @LastModifiedDate//엔티티의 값을 변경할댜 시간을 자동으로 저장
     private LocalDateTime updateTime;
