@@ -3,6 +3,7 @@ package com.shop.entity;
 import com.shop.entity.constant.ItemSellStatus;
 import com.shop.repository.ItemRepository;
 import com.shop.repository.MemberRepository;
+import com.shop.repository.OrderItemRepository;
 import com.shop.repository.OrderRepository;
 import org.aspectj.weaver.ast.Or;
 import org.junit.jupiter.api.DisplayName;
@@ -99,6 +100,25 @@ class OrderTest {
         Order savedOrder= orderRepository.findById(order.getId()).orElseThrow(EntityNotFoundException::new);
         assertEquals(10,savedOrder.getOrderItems().size());//실제 db에 3개가 저장됫는지 확인
     }
+    @Autowired
+    OrderItemRepository orderItemRepository;
+
+    @Test
+    @DisplayName("지연로딩")
+    public void delayedLoadingTest(){
+        Order order = this.createOrder();
+        Long orderItemId = order.getOrderItems().get(0).getId();
+        em.flush();
+        em.clear();
+
+        OrderItem orderItem = orderItemRepository.findById(orderItemId).orElseThrow(EntityNotFoundException::new);
+        System.out.println("Order class :"+orderItem.getOrder().getClass());//실제 객체 대신 프록시 객체
+        System.out.println("----------------------------------------------");
+        orderItem.getOrder().getOrderDate();//주문일을 조회할때 SELECT문 실행
+        System.out.println("----------------------------------------------");
+
+    }
+
 
 
 
