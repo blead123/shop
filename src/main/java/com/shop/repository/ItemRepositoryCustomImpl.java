@@ -3,8 +3,11 @@ package com.shop.repository;
 import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shop.dto.ItemSearchDto;
+import com.shop.dto.MainItemDto;
+import com.shop.dto.QMainItemDto;
 import com.shop.entity.Item;
 import com.shop.entity.QItem;
+import com.shop.entity.QItemImg;
 import com.shop.entity.constant.ItemSellStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
@@ -16,6 +19,8 @@ import org.thymeleaf.util.StringUtils;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.shop.entity.QItem.item;
 
 //구현체
 public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
@@ -29,7 +34,7 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     //상품 판매 상태 조건이 null이 아나리 판매중 품절 상태라면 해당 조건의 상품만 조회
     private BooleanExpression searchSellStatusEq(ItemSellStatus searchSellStatus){
         return searchSellStatus ==
-                null ? null : QItem.item.isSold.eq(searchSellStatus);
+                null ? null : item.isSold.eq(searchSellStatus);
     }
     //서치데이트타입 값에 따라 데이트 타임값을 이전 시간으로 값으로 세팅 , 해당 시간이후로 등록된 상품만 조회
     //프론트에서 한달전 상품만 보기 설정시 dateTime 값을 1m로 설정후 최근 한달동안 등록된 상품만 조회
@@ -47,14 +52,14 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
         } else if(StringUtils.equals("6m",searchDateType)){
             dateTime=dateTime.minusMonths(6);
         }
-        return QItem.item.registeredTime.after(dateTime);
+        return item.registeredTime.after(dateTime);
     }
     //서치 파이의 값에 따라서 상품명에 검색어를 포함하고 있는 상품 또는 상품 생성자의 아이디에 검색어를 포함하고 있는 상품을 조회하도록 조건값 반환
     private BooleanExpression searchByLike(String searchBy , String searchQuery){
         if(StringUtils.equals("itemName",searchBy)){
-            return QItem.item.itemName.like("%"+searchQuery+"%");
+            return item.itemName.like("%"+searchQuery+"%");
         } else if(StringUtils.equals("createdBy",searchBy)){
-            return QItem.item.createdBy.like("%"+searchBy+"%");
+            return item.createdBy.like("%"+searchBy+"%");
         }
         return null;
     }
@@ -62,11 +67,11 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
 
     @Override
     public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto , Pageable pageable){
-        QueryResults<Item> results = queryFactory.selectFrom(QItem.item)
+        QueryResults<Item> results = queryFactory.selectFrom(item)
                 .where(regDtsAfter(itemSearchDto.getSearchDateType()),
                         searchSellStatusEq(itemSearchDto.getSearchSellStatus()),
                         searchByLike(itemSearchDto.getSearchBy(), itemSearchDto.getSearchQuery()))
-                .orderBy(QItem.item.id.desc())
+                .orderBy(item.id.desc())
                 .offset(pageable.getOffset())//데이터를 가지고올 시작 인덱스
                 .limit(pageable.getPageSize())//한번에 가저올 데이터 갯수
                 .fetchResults();//조회한 리스트 및 전체 개수를 포함하는 쿼리 리슐트를 반환 사움 데이터 리스트 조회 및 상품 데이터 전체 갯수를 조회하는 두번의 쿼리 실행
@@ -75,5 +80,38 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
         Long total = results.getTotal();
         return new PageImpl<>(content , pageable , total);
 
+    }
+
+    private BooleanExpression itemNameLike(String searchQuery){
+        return StringUtils.isEmpty(searchQuery)?
+                null : item.itemName.like("%"+searchQuery+"%");
+    }
+
+    @Override
+    public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto , Pageable pageable){
+        QItem qItem = item;
+        QItemImg itemImg = QItemImg.itemImg;
+
+        QueryResults<MainItemDto> results = queryFactory
+                .select(
+                        new QMainItemDto(//생성자에 반환할 값넣기 쿼리프로젝션은 DTO로 바로 조회 가능 엔티티 조회후 dto로 변환하는 과정을 줄일수 있음
+                        item.id,
+                        item.itemName,
+                        item.description,
+                        itemImg.imgUrl,
+                        item.price)
+                )
+                .from(itemImg)
+                .join(itemImg.item , item)//아이템 테이블과 이미지 아이템을 내부조인
+                .where(itemImg.repimgYn.eq("Y"))//상품이미지는 대표 이미지만 불러오기
+                .where(itemNameLike(itemSearchDto.getSearchQuery()))
+                .orderBy(item.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
+
+        List<MainItemDto> content = results.getResults();
+        Long total = results.getTotal();
+        return new PageImpl<>(content , pageable , total);
     }
 }

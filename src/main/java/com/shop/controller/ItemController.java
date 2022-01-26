@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -72,5 +73,37 @@ public class ItemController {
         model.addAttribute("itemSearchDto",itemSearchDto);//페이지 전환시 기존 검색조건을 유지한채 이동 하도록 뷰에 전달
         model.addAttribute("maxPage",5);//상품관리 메뉴 하단에 포여줄 최대 페이지 갯수
         return "item/itemMng";
+    }
+
+    @GetMapping(value = "admin/item/{itemId}")
+    public String itemDetail(@PathVariable("itemId")  Long itemId , Model model){
+        try{
+            ItemFormDto itemFormDto = itemService.getItemDetail(itemId);//조회할 상품을 모델에 담아서 뷰에 전달
+            model.addAttribute("itemFormDto",itemFormDto);
+        }catch (EntityNotFoundException e){//상품이 존재 하지 않으면 에러메세지 호출후 상품 등록페이지 이동
+            model.addAttribute("errorMessage","존재하지 않는 상품 입니다");
+            model.addAttribute("itemFormDto", new ItemFormDto());
+            return "item/itemFrom";
+        }
+        return "item/itemForm";
+    }
+
+    @PostMapping(value = "/admin/item/{itemId}")
+    public String itemUpdate(@Valid ItemFormDto itemFormDto , BindingResult bindingResult, @RequestParam("itemImgFile")
+                             List<MultipartFile> itemImgFileList , Model model){
+        if(bindingResult.hasErrors()){
+            return "item/itemForm";
+        }
+        if(itemImgFileList.get(0).isEmpty() && itemFormDto.getId()==null){
+            model.addAttribute("errorMessage","첫번째 상품은 필수 입력값입니다");
+            return "item/itemForm";
+        }
+        try{ itemService.updateItem(itemFormDto,itemImgFileList);}
+        catch (Exception e){
+            model.addAttribute("errorMessage","상품수정중 에러가 발생했습니다");
+            return "item/itemForm";
+        }
+
+        return "redirect:/";
     }
 }
