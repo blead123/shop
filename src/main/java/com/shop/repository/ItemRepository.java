@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import java.util.List;
 
-public interface ItemRepository extends JpaRepository<Item , Long> , QuerydslPredicateExecutor {
+public interface ItemRepository extends JpaRepository<Item , Long> , QuerydslPredicateExecutor, ItemRepositoryCustom {
 
     @Query("select i from Item i where i.description like %:description% order by i.price desc")
     List<Item> findByDescription(@Param("description") String description );
