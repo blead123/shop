@@ -88,22 +88,22 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     }
 
     @Override
-    public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto , Pageable pageable){
-        QItem qItem = item;
+    public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto, Pageable pageable) {
+        QItem item = QItem.item;
         QItemImg itemImg = QItemImg.itemImg;
 
         QueryResults<MainItemDto> results = queryFactory
                 .select(
-                        new QMainItemDto(//생성자에 반환할 값넣기 쿼리프로젝션은 DTO로 바로 조회 가능 엔티티 조회후 dto로 변환하는 과정을 줄일수 있음
-                        item.id,
-                        item.itemName,
-                        item.description,
-                        itemImg.imgUrl,
-                        item.price)
+                        new QMainItemDto(
+                                item.id,
+                                item.itemName,
+                                item.description,
+                                itemImg.imgUrl,
+                                item.price)
                 )
                 .from(itemImg)
-                .join(itemImg.item , item)//아이템 테이블과 이미지 아이템을 내부조인
-                .where(itemImg.repimgYn.eq("Y"))//상품이미지는 대표 이미지만 불러오기
+                .join(itemImg.item, item)
+                .where(itemImg.repimgYn.eq("Y"))
                 .where(itemNameLike(itemSearchDto.getSearchQuery()))
                 .orderBy(item.id.desc())
                 .offset(pageable.getOffset())
@@ -111,7 +111,10 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
                 .fetchResults();
 
         List<MainItemDto> content = results.getResults();
-        Long total = results.getTotal();
-        return new PageImpl<>(content , pageable , total);
+        long total = results.getTotal();
+        return new PageImpl<>(content, pageable, total);
     }
+
 }
+
+

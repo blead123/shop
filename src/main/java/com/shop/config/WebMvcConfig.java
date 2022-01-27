@@ -14,7 +14,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     //로컬 컴퓨터에 있는 파일 찾는 위치
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry){
-        registry.addResourceHandler("**/images/**")//upLoadPath에 설정한 폴더를 기준으로 파일을 읽어옴
+        registry.addResourceHandler("/images/**")//uploadPath 에 설정한 폴더를 기준으로 파일을 읽어옴
                 .addResourceLocations(uploadPath);//루트 경로 설정
     }
 
