@@ -36,4 +36,31 @@ public class Order extends BaseEntity {
     //하나의 주문은 여러개의 상품값-->리스트 타입
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    //주문상품 담기기
+   public void addOrderItem(OrderItem orderItem){
+      //양방향 참조 관계
+       orderItems.add(orderItem);
+       orderItem.setOrder(this);
+   }
+   //주문 생성
+   public static Order createOrder(Member member , List<OrderItem> orderItemList){
+       Order order = new Order();
+       order.setMember(member);
+
+       for(OrderItem orderItem : orderItemList){
+           order.addOrderItem(orderItem);
+       }
+       order.setOrderStatus(OrderStatus.ORDER);
+       order.setOrderDate(LocalDateTime.now());
+       return order;
+   }
+
+   //전체가격 계산
+   public int getTotalPrice(){
+       int totalPrice = 0;
+       for(OrderItem orderItem : orderItems){
+           totalPrice=totalPrice+orderItem.getTotalPrice();
+       }
+       return totalPrice;
+   }
 }

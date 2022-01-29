@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import com.shop.exception.OutOfStockException;
 
 @Entity
 @Table(name="item")
@@ -45,5 +46,14 @@ public class Item extends BaseEntity {
         this.isSold=itemFormDto.getIsSold();
     }
 
+    //재고 감소
+    public void decreaseStock(int stockNumber){
+        int restStock =this.stockNumber-stockNumber;
+        //재고 부족시
+        if(restStock<0) throw  new OutOfStockException("재고가 부족합니다. (현재 재고수량 :"+this.stockNumber+")");{
+            this.stockNumber=restStock;
+        }
+
+    }
 
 }
