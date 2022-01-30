@@ -25,7 +25,7 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name="order_id")
     private Order order;
 
-    private int price;//가격
+    private int orderPrice;//가격
 
     private int count;//갯수
 
@@ -33,7 +33,8 @@ public class OrderItem extends BaseEntity {
         OrderItem orderItem = new OrderItem();
         orderItem.setItem(item);//주문상품
         orderItem.setCount(count);//주문수량
-        orderItem.setOrderPrice(item.getPrice());//상품가격을 주문가격으로 세팅
+        //상품가격을 주문가격으로 세팅
+        orderItem.setOrderPrice(item.getPrice());
 
         item.decreaseStock(count);
         return orderItem;
