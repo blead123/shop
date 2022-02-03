@@ -10,11 +10,13 @@ import com.shop.repository.ItemRepository;
 import com.shop.repository.MemberRepository;
 import com.shop.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.codehaus.groovy.util.StringUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.util.StringUtils;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -62,7 +64,22 @@ public class OrderService {
             }
             orderHisDtos.add(orderHisDto);
         }
-        //페이지 구현 개게
+        //페이지 구현 객체
         return new PageImpl<OrderHisDto>(orderHisDtos , pageable , totalCount);
+    }
+    //주문 취소 로직
+    public void cancelOrder(Long orderId){
+        Order order=orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);
+        order.cancelOrder();
+    }
+    //현재 주문을취소한 사용자가 같은지 체크
+    public boolean validateOrder(Long orderId ,String email ){
+        Member currentMember = memberRepository.findByEmail(email);//현재 멤버
+        Order order = orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);//주문번호로 주문 찾기
+        Member savedMember = order.getMember();//주문 멤버
+
+        if(!StringUtils.equals(currentMember.getEmail(),savedMember.getEmail()))
+            return false;
+        else return true;
     }
 }

@@ -52,8 +52,14 @@ public class Item extends BaseEntity {
         //재고 부족시
         if(restStock<0) throw  new OutOfStockException("재고가 부족합니다. (현재 재고수량 :"+this.stockNumber+")");{
             this.stockNumber=restStock;
+            isSold=ItemSellStatus.SOLDOUT;
         }
 
+    }
+
+    //재고 증가
+    public void addStock(int stockNumber){
+        int restStock=this.stockNumber+stockNumber;
     }
 
 }
