@@ -82,4 +82,21 @@ public class OrderService {
             return false;
         else return true;
     }
+    public Long orders(List<OrderDto> orderDtoList, String email){
+        Member member = memberRepository.findByEmail(email);
+        List<OrderItem> orderItemList = new ArrayList<>();
+
+        //주문할 상품 리스트 생성
+        for(OrderDto orderDto : orderDtoList ){
+            Item item = itemRepository.findById(orderDto.getItemId()).orElseThrow(EntityNotFoundException::new);
+
+            OrderItem orderItem = OrderItem.createOrderItem(item,orderDto.getCount());
+            orderItemList.add(orderItem);
+        }
+        //주문 엔티티 생성
+        Order order = Order.createOrder(member, orderItemList);
+        orderRepository.save(order);
+
+        return order.getId();
+    }
 }
